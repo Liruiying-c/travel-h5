@@ -4,6 +4,9 @@ import Chat from '../views/Chat.vue'
 import Profile from '../views/Profile.vue'
 import Login from '../views/Login.vue'
 import Detail from '../views/Detail.vue'
+import MyCollect from '../views/MyCollect.vue'
+import UserSetting from '../views/UserSetting.vue'
+import HistorySearch from '../views/HistorySearch.vue'
 
 const routes = [
   {
@@ -30,6 +33,21 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login,
+  },
+  {
+    path: '/mycollect',
+    name: 'MyCollect',
+    component: MyCollect,
+  },
+  {
+    path: '/usersetting',
+    name: 'UserSetting',
+    component: UserSetting,
+  },
+  {
+    path: '/history',
+    name: 'HistorySearch',
+    component: HistorySearch,
   },
 ]
 
