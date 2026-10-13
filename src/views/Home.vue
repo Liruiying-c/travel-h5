@@ -34,7 +34,7 @@
     <div class="card">
       <div class="section-title">快捷入口</div>
       <div class="quick-entry">
-        <div @click="goPage('/chat')" class="entry-item">
+        <div @click="handleChat" class="entry-item">
           <div class="entry-icon">
             <van-icon name="chat-o" size="30" />
           </div>
@@ -79,6 +79,7 @@
 import { ref,reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import {showToast} from 'vant'
+import { isLoggedIn } from '../store/user'
 
 const router = useRouter()
 
@@ -115,6 +116,16 @@ const goPage = (path) => {
   router.push(path)
 }
 
+// AI 对话（需登录）
+const handleChat = () => {
+  if (!isLoggedIn.value) {
+    showToast('请先登录')
+    router.push({ name: 'Login' })
+    return
+  }
+  router.push('/chat')
+}
+
 // 选择城市
 const selectedCity = (city) => {
   formData.city = city
@@ -122,6 +133,12 @@ const selectedCity = (city) => {
 
 // 旅游规划提交
 const handleSubmit = () => {
+  // 未登录拦截
+  if(!isLoggedIn.value) {
+    showToast('请先登录')
+    router.push({ name: 'Login' })
+    return
+  }
   // 检验
   if(!formData.city) {
     showToast('请选择目的地')

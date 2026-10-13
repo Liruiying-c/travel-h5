@@ -19,6 +19,7 @@
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
+import { setUser } from '../store/user'
 
 const router = useRouter()
 const form = reactive({
@@ -41,7 +42,8 @@ const handleLogin = () => {
     phone: form.phone,
     LastLogin: new Date().toLocaleString(),
   }
-  localStorage.setItem('userInfo', JSON.stringify(userInfo))
+  // 保存登录信息至全局 store（同步至 localStorage）
+  setUser(userInfo)
   // 登录成功后返回个人中心
   router.replace({ name: 'Profile' })
 }

@@ -6,8 +6,8 @@
     <div class="user-card" @click="handleClickLogin">
       <van-image class="avatar" round :src="avatar" />
       <div class="user-info">
-        <div class="user-name">{{ userInfo ? userInfo.username : '立即登录' }}</div>
-        <div class="user-welcome">{{ userInfo ? userInfo.phone : '登录后，搜索历史不丢失' }}</div>
+        <div class="user-name">{{ userStore.userInfo ? userStore.userInfo.username : '立即登录' }}</div>
+        <div class="user-welcome">{{ userStore.userInfo ? userStore.userInfo.phone : '登录后，搜索历史不丢失' }}</div>
       </div>
     </div>
 
@@ -34,35 +34,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import avatar from '../assets/defaultpic.jpg'
+import userStore from '../store/user'
 
 const router = useRouter()
 
-// 登录信息（null 表示未登录）
-const userInfo = ref(null)
-
-// 获取浏览器保存的登录信息
-const loadUserInfo = () => {
-  const raw = localStorage.getItem('userInfo')
-  if (raw) {
-    try {
-      userInfo.value = JSON.parse(raw)
-    } catch (e) {
-      userInfo.value = null
-    }
-  }
-}
-
-onMounted(() => {
-  loadUserInfo()
-})
-
 // 点击用户卡片：未登录去登录，已登录去设置
 const handleClickLogin = () => {
-  if (!userInfo.value) {
+  if (!userStore.userInfo) {
     router.push({ name: 'Login' })
   } else {
     router.push({ name: 'UserSetting' })
@@ -71,7 +52,7 @@ const handleClickLogin = () => {
 
 // 点击"我的服务"项：未登录则 toast 提示并跳转登录页
 const handleService = (name) => {
-  if (!userInfo.value) {
+  if (!userStore.userInfo) {
     showToast('请先登录')
     router.push({ name: 'Login' })
     return
