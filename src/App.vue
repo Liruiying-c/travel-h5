@@ -1,9 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { ref ,computed} from 'vue'
 import {useRoute} from 'vue-router'
 
-const active = ref(0)
 const route = useRoute()
+
+// 路由顺序和tabbar顺序保持一致
+const tabRouteNames = ['Home', 'Chat', 'Profile']
+
+// 计算属性：自动根据当前路由name返回下标
+const active = computed(() => {
+  return tabRouteNames.indexOf(route.name)
+})
 </script>
 
 <template>

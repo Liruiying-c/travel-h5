@@ -29,6 +29,14 @@ export const setUser = (info) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(info))
 }
 
+// 更新用户信息
+export const updateUserInfo = (info) => {
+  userStore.userInfo = info
+  localStorage.removeItem(STORAGE_KEY)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(info))
+}
+
+
 // 登出
 export const logout = () => {
   userStore.userInfo = null

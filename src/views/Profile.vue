@@ -7,7 +7,8 @@
       <van-image class="avatar" round :src="avatar" />
       <div class="user-info">
         <div class="user-name">{{ userStore.userInfo ? userStore.userInfo.username : '立即登录' }}</div>
-        <div class="user-welcome">{{ userStore.userInfo ? userStore.userInfo.phone : '登录后，搜索历史不丢失' }}</div>
+        <!-- 回显时电话号码中间为* -->
+        <div class="user-welcome">{{ userStore.userInfo ? userStore.userInfo.phone.replace(/(\d{3})\d{8}/, '$1********') : '登录后，搜索历史不丢失' }}</div>
       </div>
     </div>
 
@@ -30,6 +31,11 @@
       </van-cell-group>
     </div>
 
+<div style="display:flex;gap:16px;justify-content:center;margin:80px 0;">
+  <van-button v-if="userStore.userInfo" type="primary" @click="handleLogout" style="width: 100px;background-color: #5bb5c4;">退出登录</van-button>
+  <van-button v-if="userStore.userInfo" type="primary" @click="handleSwapAccount" style="width: 100px;background-color: #5bb5c4;">切换账号</van-button>
+</div>
+
   </div>
 </template>
 
@@ -38,6 +44,8 @@ import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import avatar from '../assets/defaultpic.jpg'
 import userStore from '../store/user'
+import { logout } from '../store/user'
+
 
 const router = useRouter()
 
@@ -58,6 +66,18 @@ const handleService = (name) => {
     return
   }
   router.push({ name })
+}
+
+// 点击退出登录：清空用户信息并跳转登录页
+const handleLogout = () => {
+  logout()
+  showToast('退出登录成功')
+}
+
+// 点击切换账号：清空用户信息并跳转登录页
+const handleSwapAccount = () => {
+  logout()
+  router.push({ name: 'Login' })
 }
 </script>
 

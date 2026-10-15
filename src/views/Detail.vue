@@ -4,6 +4,7 @@
     <div class="page-content">
       <div class="loading-container" v-if="loading">
         <van-loading size="48px" type="spinner" />
+        <div class="loading-text">加载中...</div>
       </div>
       <div v-else-if="error">
         <van-empty description="获取推荐行程失败" >
@@ -52,6 +53,11 @@
       </template>
     </div>
     <div v-if="tripData && tripData.success === true" class="detail-footer">
+      <van-icon v-if="isFavorite"
+      name="star" class="favorite-icon" style="font-size: 24px;color: rgb(217, 217, 7);"  @click="toggleFavorite" />
+      <van-icon v-else
+      @click="toggleFavorite"
+      name="star-o" class="favorite-icon" style="font-size: 24px;" />
       <van-button class="primary-botton" type="primary" size="large" round @click="goPage('/chat')">咨询AI助手</van-button>
     </div>
   </div>
@@ -63,10 +69,11 @@
 import {ref,onMounted} from 'vue'
 import {useRoute} from 'vue-router'
 import {reactive} from 'vue'
-import request from '../utils/request'
 import SpotItem from '../components/SpotItem.vue'
 import BudgetTable from '../components/BudgetTable.vue'
 import router from '../router'
+import {showToast} from 'vant'
+import request from '../utils/request'
 
 
 
@@ -160,7 +167,19 @@ const goBack = () => {
   router.back()
 }
 
+// 收藏
+const isFavorite = ref(false)
+const toggleFavorite = () => {
+  isFavorite.value = !isFavorite.value
+  if(isFavorite.value){
+    showToast('收藏成功')
+  }else{
+    showToast('取消收藏成功')
+  }
+}
+
 // 获取推荐行程
+// const getRecommend = () => {}
 const getRecommend = async () => {
   loading.value = true
   error.value = false
@@ -203,6 +222,16 @@ const goPage = (path) => {
     min-height: 100vh;
     background-color: #f5f5f5;
     padding-bottom: 70px;
+}
+.loading-container {
+  width: 100%;
+  /* 水平居中核心：flex */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 水平居中 */
+  /* justify-content: center; 垂直居中，需要父容器有高度才生效 */
+  margin-top:50px;
+  gap:8px;
 }
 .card {
     background-color: #fff;
@@ -324,4 +353,14 @@ const goPage = (path) => {
   text-align: center;
   padding: 40px 16px;
 }
+.detail-footer {
+  display: flex;
+  align-items: center;
+  gap:12px;
+  padding:10px;
+}
+.primary-botton{
+  flex:1;
+}
+
 </style>
