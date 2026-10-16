@@ -1,5 +1,7 @@
 <template>
-  <TripList title="历史记录" :request="fetchList" />
+  <div>
+    <TripList title="历史记录" :request="fetchList" />
+  </div>
 </template>
 
 <script setup>

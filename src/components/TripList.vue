@@ -1,5 +1,6 @@
 <template>
   <div class="page-container">
+    <van-sticky class="nav-bar">
     <van-nav-bar :title="title" left-arrow @click-left="goBack">
       <template #right>
         <van-icon name="plus" size="20" @click="handleAdd" />
@@ -13,8 +14,10 @@
         shape="round"
         placeholder="搜索城市"
         background="#fff"
+        fixed
       />
     </div>
+    </van-sticky>
 
     <div class="list-content">
       <!-- 加载中 -->

@@ -1,7 +1,9 @@
 <template>
   <div class="page-container">
-    <van-nav-bar title="智能旅游助手" />
-  <div class="page-content">
+    <div class="nav-bar">
+      <van-nav-bar title="智能旅游助手"  fixed/>
+    </div>
+  <div class="page-content" style="margin-top: 45px;">
       <van-notice-bar
     left-icon="volume-o"
     text="基于AI的智能景点介绍与行程规划系统"

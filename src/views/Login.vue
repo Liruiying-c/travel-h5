@@ -1,8 +1,10 @@
 <template>
   <div class="page-container">
-    <van-nav-bar title="登录" left-arrow @click-left="router.back()" />
+    <div class="nav-bar">
+      <van-nav-bar title="登录" left-arrow @click-left="router.back()" fixed/>
+    </div>
 
-    <div class="login-card">
+    <div class="login-card" style="margin-top: 45px;">
       <van-cell-group inset>
         <van-field v-model="form.username" label="用户名" placeholder="请输入用户名" clearable />
         <van-field v-model="form.phone" label="手机号" placeholder="请输入手机号" clearable />
@@ -11,6 +13,7 @@
 
       <div class="login-btn-wrap">
         <van-button type="primary" block round @click="handleLogin">登录</van-button>
+        <van-button type="primary" block round @click="handleRegister" style="margin-top: 12px;">注册</van-button>
       </div>
     </div>
   </div>
@@ -18,9 +21,11 @@
 
 <script setup>
 import { reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter} from 'vue-router'
 import { showToast } from 'vant'
 import { setUser } from '../store/user'
+import request from '../utils/request'
+
 
 const router = useRouter()
 const form = reactive({
@@ -29,24 +34,32 @@ const form = reactive({
   password: '',
 })
 
+const response = reactive({
+  userId:'',
+  userName:'',
+  nickName:'',
+  avatar:'',
+  createTime:''
+})
+
 // 登录：将登录信息保存至浏览器
-const handleLogin = () => {
+const Check = () => {
   if (!form.username) {
     showToast('请输入用户名')
-    return
+    return false
   }
   if (!form.phone) {
     showToast('请输入手机号')
-    return
+    return false
   }
   // 添加电话号码的验证
   if (!/1[3-9]\d{9}$/.test(form.phone)) {
     showToast('请输入正确的手机号')
-    return
+    return false
   }
   if (!form.password) {
     showToast('请输入密码')
-    return
+    return false
   }
   const userInfo = {
     username: form.username,
@@ -54,10 +67,64 @@ const handleLogin = () => {
     password: form.password,
     LastLogin: new Date().toLocaleString(),
   }
-  // 保存登录信息至全局 store（同步至 localStorage）
-  setUser(userInfo)
-  // 登录成功后返回个人中心
-  router.replace({ name: 'Profile' })
+  return userInfo
+}
+
+const handleLogin = async () => {
+  const userInfo = Check()
+  if (!userInfo) {
+    return
+  }
+  try {
+    const res = await request.post('/api/travel/login',{
+      username: form.phone,
+      nickname: form.username,
+      passwordHash: form.password
+    })
+    if (res.code === 200) {
+      showToast('登录成功')
+      response.userId = res.data.id
+      response.userName = res.data.username
+      response.nickName = res.data.nickname
+      response.avatar = res.data.avatar
+      response.createTime = res.data.createTime
+      setUser(response)
+      router.back()
+    } else {
+      showToast(res.message)
+    }
+  } catch (error) {
+    console.log(error)
+    showToast("登录失败")
+  }
+}
+
+const handleRegister = async () => {
+  const userInfo = Check()
+  if (!userInfo) {
+    return
+  }
+  try {
+    const res = await request.post('/api/travel/register',{
+      username: form.phone,
+      nickname: form.username,
+      passwordHash: form.password
+    })
+    if (res.code === 200) {
+      showToast('注册成功')
+      response.userId = res.data.id
+      response.userName = res.data.username
+      response.nickName = res.data.nickname
+      response.avatar = res.data.avatar
+      response.createTime = res.data.createTime
+      setUser(response)
+      router.back();
+    } else {
+      showToast(res.message)
+    }
+  } catch (error) {
+    showToast("注册失败")
+  }
 }
 </script>
 

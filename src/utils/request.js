@@ -1,9 +1,11 @@
 import axios from 'axios'
+import router from '../router'
 
 // 创建 axios 实例
 const request = axios.create({
   baseURL: '/',
-  timeout: 100000,
+  timeout: 600000,
+  withCredentials: true
 })
 
 // 请求拦截器

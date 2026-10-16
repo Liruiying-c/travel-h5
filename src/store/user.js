@@ -32,8 +32,6 @@ export const setUser = (info) => {
 // 更新用户信息
 export const updateUserInfo = (info) => {
   userStore.userInfo = info
-  localStorage.removeItem(STORAGE_KEY)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(info))
 }
 
 

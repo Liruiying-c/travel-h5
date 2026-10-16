@@ -1,7 +1,9 @@
 <template>
   <div class="page-container">
-    <van-nav-bar title="推荐行程" left-arrow @click="goBack"/>
-    <div class="page-content">
+    <div class="nav-bar">
+      <van-nav-bar title="推荐行程" left-arrow @click="goBack" fixed/>
+    </div>
+    <div class="page-content" style="margin-top: 45px;">
       <div class="loading-container" v-if="loading">
         <van-loading size="48px" type="spinner" />
         <div class="loading-text">加载中...</div>

@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <van-nav-bar title="设置" left-arrow @click-left="goBack" />
+    <van-nav-bar title="设置" left-arrow @click-left="goBack" fixed/>
 
    <div class="section">
       <div class="section-title">用户信息</div>
@@ -90,7 +90,7 @@ const handleUpdatePassword = () => {
   padding-bottom: 70px;
 }
 .section {
-  margin-top: 20px;
+  margin-top: 50px;
 }
 .section-title {
   font-size: 18px;

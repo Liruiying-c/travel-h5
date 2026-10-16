@@ -1,14 +1,17 @@
 <template>
   <div class="page-container">
-    <van-nav-bar title="我的" left-arrow />
-
+    <div class="nav-bar">
+      <van-nav-bar title="我的" left-arrow fixed/>
+    </div>
+    <div class="page-content" style="margin-top: 45px;">
+    
     <!-- 用户信息卡片 -->
     <div class="user-card" @click="handleClickLogin">
       <van-image class="avatar" round :src="avatar" />
       <div class="user-info">
-        <div class="user-name">{{ userStore.userInfo ? userStore.userInfo.username : '立即登录' }}</div>
+        <div class="user-name">{{ userStore.userInfo ? userStore.userInfo.nickName : '立即登录' }}</div>
         <!-- 回显时电话号码中间为* -->
-        <div class="user-welcome">{{ userStore.userInfo ? userStore.userInfo.phone.replace(/(\d{3})\d{8}/, '$1********') : '登录后，搜索历史不丢失' }}</div>
+        <div class="user-welcome">{{ userStore.userInfo ? userStore.userInfo.userName.replace(/(\d{3})\d{8}/, '$1********') : '登录后，搜索历史不丢失' }}</div>
       </div>
     </div>
 
@@ -35,7 +38,7 @@
   <van-button v-if="userStore.userInfo" type="primary" @click="handleLogout" style="width: 100px;background-color: #5bb5c4;">退出登录</van-button>
   <van-button v-if="userStore.userInfo" type="primary" @click="handleSwapAccount" style="width: 100px;background-color: #5bb5c4;">切换账号</van-button>
 </div>
-
+</div>
   </div>
 </template>
 
@@ -45,6 +48,7 @@ import { showToast } from 'vant'
 import avatar from '../assets/defaultpic.jpg'
 import userStore from '../store/user'
 import { logout } from '../store/user'
+import request from '../utils/request'
 
 
 const router = useRouter()
@@ -69,14 +73,19 @@ const handleService = (name) => {
 }
 
 // 点击退出登录：清空用户信息并跳转登录页
-const handleLogout = () => {
-  logout()
-  showToast('退出登录成功')
+const handleLogout = async() => {
+  const res = await request.post('/api/travel/logout')
+  if(res.code === 200){
+    showToast('退出登录成功')
+    logout()
+  }else{
+    showToast('退出登录失败')
+  }
 }
 
 // 点击切换账号：清空用户信息并跳转登录页
-const handleSwapAccount = () => {
-  logout()
+const handleSwapAccount = async () => {
+  await handleLogout()
   router.push({ name: 'Login' })
 }
 </script>
