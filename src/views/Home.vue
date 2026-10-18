@@ -159,6 +159,7 @@ const handleSubmit = () => {
   router.push({
     name: 'Detail',
     query: {
+      from: 'Home',
       city: formData.city,
       bugget: formData.bugget,
       days: formData.days

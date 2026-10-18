@@ -41,7 +41,7 @@
           </div>
           <div class="info-row">
             <van-icon name="gold-coin-o" size="14" />
-            <span>预算 ¥{{ item.budget }}</span>
+            <span>预算 ¥{{ item.totalBudget }}</span>
           </div>
         </div>
         <div class="card-foot">
@@ -56,6 +56,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast, showDialog } from 'vant'
+import { getUserId } from '../store/user'
+import request from '../utils/request'
 
 const props = defineProps({
   // 页面标题
@@ -63,21 +65,15 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  // 获取列表的请求函数（返回列表数据）
-  request: {
-    type: Function,
-    required: true,
+  // 来源页面标识，点击卡片时带给详情页
+  from: {
+    type: String,
+    default: '',
   },
-  // 删除单条记录的请求函数
-  remove: {
-    type: Function,
-    default: null,
-  },
-  // 自定义新增回调，默认跳转首页规划新行程
-  onAdd: {
-    type: Function,
-    default: null,
-  },
+  isCollect: {
+    type: String,
+    default: 0,
+  }
 })
 
 const router = useRouter()
@@ -99,10 +95,6 @@ const goBack = () => {
 
 // 新增：默认跳转首页规划新行程
 const handleAdd = () => {
-  if (props.onAdd) {
-    props.onAdd()
-    return
-  }
   router.push({ name: 'Home' })
 }
 
@@ -110,8 +102,14 @@ const handleAdd = () => {
 const fetchList = async () => {
   loading.value = true
   try {
-    const res = await props.request()
+    const res = await request.post('/api/travel/history',{},{
+      params:{
+        userId: getUserId(),
+        collected: props.isCollect === "1" ? 1 : 0, 
+      }
+    })
     list.value = Array.isArray(res) ? res : (res?.data || res?.list || [])
+    console.log(filteredList.value)
   } catch (err) {
     console.error('请求失败:', err)
     showToast('加载失败')
@@ -130,9 +128,10 @@ const handleDelete = (e,item) => {
   })
     .then(async () => {
       try {
-        if (props.remove) {
-          await props.remove(item)
-        }
+          const res = await request.post('/api/travel/tripDelete',{},{
+            params: {
+            id: item.id,
+          }})
         list.value = list.value.filter((i) => i.id !== item.id)
         showToast('删除成功')
       } catch (err) {
@@ -143,9 +142,16 @@ const handleDelete = (e,item) => {
     .catch(() => {})
 }
 
-// 点击列表项：跳转详情页
+// 点击列表项：携带来源、记录id、收藏状态跳转详情页
 const handleClick = (item) => {
-  router.push({ name: 'Detail', params: { id: item.id } })
+  router.push({
+    name: 'Detail',
+    query: {
+      from: props.from,
+      id: item.id,
+      isCollected: props.isCollected,
+    },
+  })
 }
 
 

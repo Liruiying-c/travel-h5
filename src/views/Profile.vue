@@ -11,7 +11,7 @@
       <div class="user-info">
         <div class="user-name">{{ userStore.userInfo ? userStore.userInfo.nickName : '立即登录' }}</div>
         <!-- 回显时电话号码中间为* -->
-        <div class="user-welcome">{{ userStore.userInfo ? userStore.userInfo.userName.replace(/(\d{3})\d{8}/, '$1********') : '登录后，搜索历史不丢失' }}</div>
+        <div class="user-welcome">{{ userStore.userInfo ? userStore.userInfo.userName.replace(/(\d{1})\d{7}(\d{3})/, '$1*******$2') : '登录后，搜索历史不丢失' }}</div>
       </div>
     </div>
 
@@ -19,7 +19,7 @@
     <div class="section">
       <div class="section-title">我的服务</div>
       <van-cell-group inset>
-        <van-cell title="我的收藏" icon="star-o" is-link @click="handleService('MyCollect')" />
+        <van-cell title="我的收藏" is-link @click="handleService('MyCollect')" />
         <van-cell title="历史记录" is-link @click="handleService('HistorySearch')" />
         <van-cell title="设置" is-link @click="handleService('UserSetting')" />
       </van-cell-group>
@@ -29,7 +29,7 @@
     <div class="section">
       <div class="section-title">关于</div>
       <van-cell-group inset>
-        <van-cell title="关于我们" is-link />
+        <van-cell title="关于我们" is-link @click="handleService('AboutUs')" />
         <van-cell title="版本信息" value="v1.0.0" />
       </van-cell-group>
     </div>

@@ -10,7 +10,7 @@
       </div>
       <div v-else-if="error">
         <van-empty description="获取推荐行程失败" >
-          <van-button type="primary" size="large" @click="getRecommend">重新规划</van-button>
+          <van-button type="primary" size="large" @click="init">重新规划</van-button>
         </van-empty>
       </div>
       <template v-else-if="tripData && tripData.success === true">
@@ -18,8 +18,8 @@
           <h2>{{ tripData.city }} · {{ tripData.days }}天的行程</h2>
         </div>
         <van-collapse v-model="activeDays">
-          <van-collapse-item v-for="day in tripData.dailyItinerary" :key="day.days" 
-          :title="day.date" :name="day.days">
+          <van-collapse-item v-for="day in tripData.dailyItinerary" :key="day.day"
+          :title="day.date" :name="day.day">
           <div class="day-schedule">
             <div class="schedule-section">
               <div class="section-label morning">上午</div>
@@ -76,8 +76,7 @@ import BudgetTable from '../components/BudgetTable.vue'
 import router from '../router'
 import {showToast} from 'vant'
 import request from '../utils/request'
-
-
+import { getUserId } from '../store/user'
 
 const route = useRoute()
 const activeDays = ref([])
@@ -171,12 +170,49 @@ const goBack = () => {
 
 // 收藏
 const isFavorite = ref(false)
-const toggleFavorite = () => {
+const toggleFavorite = async () => {
+  // 先存旧状态，失败用来回滚
+  const oldState = isFavorite.value
+  // 乐观更新UI
   isFavorite.value = !isFavorite.value
-  if(isFavorite.value){
-    showToast('收藏成功')
-  }else{
-    showToast('取消收藏成功')
+  try {
+    await request.post('/api/travel/collected', {}, {
+      params: {
+        id: route.query.id,
+        collected: isFavorite.value ? 1 : 0,
+      }
+    })
+    showToast(isFavorite.value ? '收藏成功' : '取消收藏成功')
+  } catch (err) {
+    console.error('收藏失败:', err)
+    // 请求失败，恢复原来状态
+    isFavorite.value = oldState
+    showToast('操作失败，请重试')
+    // ❗不要修改全局error.value，不要把整个页面崩掉
+  }
+}
+
+// 从历史记录/我的收藏进入：根据 id 查询真实收藏状态！
+const getHistoryDetail = async () => {
+  loading.value = true
+  error.value = false
+  try {
+    const res = await request.post('/api/travel/tripDetail',{}, {
+      params: {id: route.query.id}
+    })
+    const data = res.data || res || {}
+    data.success = true
+    tripData.value = data
+    const collectRes = await request.post('/api/travel/checkCollect', {}, {
+      params: {id: route.query.id}
+    })
+    isFavorite.value = !!collectRes.data;
+    activeDays.value = [tripData.value.dailyItinerary?.[0]?.day ?? 1]
+  } catch (err) {
+    console.error('获取历史行程失败:', err)
+    error.value = true
+  } finally {
+    loading.value = false
   }
 }
 
@@ -187,12 +223,15 @@ const getRecommend = async () => {
   error.value = false
   try {
     const res = await request.post('/api/travel/recommend', {
+      userId: getUserId(),
       city: formData.city,
       budget: Number(formData.bugget),
       days: Number(formData.days),
     })
-    
+
     tripData.value = res.data || {}
+    // 默认展开第一天
+    activeDays.value = [tripData.value.dailyItinerary?.[0]?.day ?? 1]
   } catch (err) {
     console.error('请求失败:', err)
     error.value = true
@@ -201,13 +240,22 @@ const getRecommend = async () => {
   }
 }
 
-onMounted(async () => { // 获取url上的参数
-  console.log(route.query)
-  formData.city = route.query.city
-  formData.bugget = route.query.bugget
-  formData.days = route.query.days
-  // 调用推荐接口
-  await getRecommend()
+
+// 按来源页面选择加载方式（未知来源兜底走推荐接口）
+const init = () => {
+  const { from, id, city, bugget, days } = route.query
+  if (id && (from === 'HistorySearch' || from === 'MyCollect')) {
+    getHistoryDetail()
+  } else {
+    formData.city = city
+    formData.bugget = bugget
+    formData.days = days
+    getRecommend()
+  }
+}
+
+onMounted(() => {
+  init()
 })
 
 const goPage = (path) => {

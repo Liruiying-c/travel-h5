@@ -5,8 +5,8 @@
    <div class="section">
       <div class="section-title">用户信息</div>
       <van-cell-group inset>
-        <van-cell title="用户名" :value="userStore.userInfo.username" @click="showPopup = true" is-link />
-        <van-cell title="手机号" :value="userStore.userInfo.phone" />
+        <van-cell title="用户名" :value="userStore.userInfo.nickName" @click="showPopup = true" is-link />
+        <van-cell title="手机号" :value="userStore.userInfo.userName.replace(/(\d{1})\d{7}(\d{3})/, '$1*******$2')" />
         <van-cell title="密码" value="********" is-link @click="showPopupPassword = true"/>
       </van-cell-group>
       </div>
@@ -90,7 +90,8 @@ const handleUpdatePassword = () => {
   padding-bottom: 70px;
 }
 .section {
-  margin-top: 50px;
+  margin-top: 45px;
+  padding-top: 10px;
 }
 .section-title {
   font-size: 18px;

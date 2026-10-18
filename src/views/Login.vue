@@ -23,7 +23,7 @@
 import { reactive } from 'vue'
 import { useRouter} from 'vue-router'
 import { showToast } from 'vant'
-import { setUser } from '../store/user'
+import { saveToStorage } from '../store/user'
 import request from '../utils/request'
 
 
@@ -39,7 +39,8 @@ const response = reactive({
   userName:'',
   nickName:'',
   avatar:'',
-  createTime:''
+  createTime:'',
+  expireTime:''
 })
 
 // 登录：将登录信息保存至浏览器
@@ -65,7 +66,6 @@ const Check = () => {
     username: form.username,
     phone: form.phone,
     password: form.password,
-    LastLogin: new Date().toLocaleString(),
   }
   return userInfo
 }
@@ -88,7 +88,7 @@ const handleLogin = async () => {
       response.nickName = res.data.nickname
       response.avatar = res.data.avatar
       response.createTime = res.data.createTime
-      setUser(response)
+      saveToStorage(response)
       router.back()
     } else {
       showToast(res.message)
@@ -117,7 +117,7 @@ const handleRegister = async () => {
       response.nickName = res.data.nickname
       response.avatar = res.data.avatar
       response.createTime = res.data.createTime
-      setUser(response)
+      saveToStorage(response)
       router.back();
     } else {
       showToast(res.message)

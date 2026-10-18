@@ -43,10 +43,11 @@
 
 <script setup>
 import router from '../router'
-import { ref } from 'vue'
-import { fetchStream } from '../utils/request'
+import { ref, onMounted, nextTick } from 'vue'
+import request, { fetchStream } from '../utils/request'
 import { showToast } from 'vant'
 import ChatBubble from '../components/ChatBubble.vue'
+import { getUserId, isLoggedIn } from '../store/user'
 
 // 聊天容器
 const chatContainer = ref(null)
@@ -74,24 +75,26 @@ const sendMessage = () => {
   }
 
   // 创建用户的会话消息
-  addUserMessage(msg)
+  const userMsg = addUserMessage(msg)
   // 清空输入框的内容
   inputMessage.value = ''
   // 发送流式请求
-  fetchAIResponse(msg)
+  fetchAIResponse(msg, userMsg)
 }
 
 const addUserMessage = (msg) => {
-  messages.value.push({
+  const message = {
     id: Date.now() + 1,
     role: 'user',
     content: msg,
     timestamp: new Date().toISOString()
-  })
+  }
+  messages.value.push(message)
+  return message
 }
 
 // 获取流式响应
-const fetchAIResponse = (msg) => {
+const fetchAIResponse = (msg, userMsg) => {
   isStreaming.value = true
   // 添加AI返回的消息
   messages.value.push({
@@ -115,6 +118,8 @@ const fetchAIResponse = (msg) => {
     // AI回复完成
     isStreaming.value = false
     scrollToBottom()
+    // 保存这一轮对话到后端
+    saveChatRound(userMsg, fullResponse)
   }, (errMsg) => {
     // AI回复失败
     const lastMessage = messages.value[messages.value.length - 1]
@@ -142,6 +147,53 @@ const handleClickQuestion = (question) => {
   inputMessage.value += question
 }
 
+// 接口地址（按后端实际路径调整）
+const SAVE_API = '/api/travel/chatsave'
+const HISTORY_API = '/api/travel/chatget'
+
+// 保存一轮对话到后端
+const saveChatRound = async (userMsg, aiContent) => {
+  if (!isLoggedIn.value) return
+  try {
+    await request.post(SAVE_API, {
+      userId: getUserId(),
+      userMsg: userMsg.content,
+      userTime: userMsg.timestamp,
+      aiMsg: aiContent,
+      aiTime: new Date().toISOString()
+    })
+  } catch (err) {
+    console.error('保存对话失败:', err)
+  }
+}
+
+// 登录后获取历史聊天记录
+const fetchHistory = async () => {
+  if (!isLoggedIn.value) return
+  try {
+    const res = await request.post(HISTORY_API, {},{
+      params: { userId: getUserId() }
+    })
+    const records = Array.isArray(res) ? res : (res?.data || [])
+    // 按用户提问时间升序排序
+    records.sort((a, b) => new Date(a.user_time) - new Date(b.user_time))
+    // 每条记录拆成用户消息和AI消息
+    const history = []
+    records.forEach((r) => {
+      history.push({ id: `${r.id}-u`, role: 'user', content: r.userMsg, timestamp: r.userTime })
+      history.push({ id: `${r.id}-a`, role: 'AI', content: r.aiMsg, timestamp: r.aiTime })
+    })
+    messages.value = history
+    await nextTick()
+    scrollToBottom()
+  } catch (err) {
+    console.error('获取历史聊天记录失败:', err)
+  }
+}
+
+onMounted(() => {
+  fetchHistory()
+})
 
 </script>
 
@@ -157,7 +209,7 @@ const handleClickQuestion = (question) => {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  padding-bottom: 60px;
+  padding-bottom: 70px;
 }
 
 .chat-empty {

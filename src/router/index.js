@@ -7,6 +7,7 @@ import Detail from '../views/Detail.vue'
 import MyCollect from '../views/MyCollect.vue'
 import UserSetting from '../views/UserSetting.vue'
 import HistorySearch from '../views/HistorySearch.vue'
+import AboutUs from '../views/AboutUs.vue'
 
 const routes = [
   {
@@ -48,6 +49,11 @@ const routes = [
     path: '/history',
     name: 'HistorySearch',
     component: HistorySearch,
+  },
+  {
+    path: '/aboutus',
+    name: 'AboutUs',
+    component: AboutUs,
   },
 ]
 
