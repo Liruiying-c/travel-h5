@@ -124,11 +124,14 @@ const handleDelete = (e,item) => {
   e.stopPropagation()
   showDialog({
     title: '提示',
-    message: '确定删除该记录吗？',
+    message: '确定删除该记录吗？将同时删除收藏和历史记录，且不可恢复。',
+    showCancelButton: true, // 开启取消按钮
+    cancelButtonText: '取消',
+    confirmButtonText: '确定'
   })
     .then(async () => {
       try {
-          const res = await request.post('/api/travel/tripDelete',{},{
+          const res = await request.post('/api/travel/delete_trip',{},{
             params: {
             id: item.id,
           }})
@@ -139,7 +142,9 @@ const handleDelete = (e,item) => {
         showToast('删除失败')
       }
     })
-    .catch(() => {})
+    .catch(() => {
+      showToast('删除已取消')
+    });
 }
 
 // 点击列表项：携带来源、记录id、收藏状态跳转详情页

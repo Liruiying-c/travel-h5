@@ -11,12 +11,12 @@
       </van-cell-group>
       </div>
       <van-popup v-model:show="showPopup" position="bottom" style="height: 30%" >
-        <van-field v-model="newusername" label="用户名" style="background-color: #f7f7f7; border-radius: 8px; margin: 8px 16px;width: 80%;" />
+        <van-field v-model="newusername" label="用户名" placeholder="请输入新用户名" clearable style="background-color: #f7f7f7; border-radius: 8px; margin: 8px 16px;width: 80%;" />
         <van-button type="primary" block @click="handleUpdate" round style="width: 50%; margin: 10px auto;">更新</van-button>
       </van-popup>
       <van-popup v-model:show="showPopupPassword" position="bottom" style="height: 30%" >
-        <van-field v-model="oldpassword" label="旧密码" style="background-color: #f7f7f7; border-radius: 8px; margin: 8px 16px;width: 80%;" type="password" />
-        <van-field v-model="newpassword" label="新密码" style="background-color: #f7f7f7; border-radius: 8px; margin: 8px 16px;width: 80%;" type="password" />
+        <van-field v-model="oldpassword" label="旧密码" placeholder="请输入旧密码" clearable style="background-color: #f7f7f7; border-radius: 8px; margin: 8px 16px;width: 80%;" type="password" />
+        <van-field v-model="newpassword" label="新密码" placeholder="请输入新密码" clearable style="background-color: #f7f7f7; border-radius: 8px; margin: 8px 16px;width: 80%;" type="password" />
         <van-button type="primary" block @click="handleUpdatePassword" round style="width: 50%; margin: 10px auto;">更新密码</van-button>
       </van-popup>  
   </div>
@@ -27,11 +27,12 @@ import router from '../router'
 import userStore from '../store/user'
 import { showToast } from 'vant'
 import { ref } from 'vue'
-import { updateUserInfo } from '../store/user'
+import { updateNickname, getUserId } from '../store/user'
+import request from '../utils/request'
 
 const showPopup = ref(false)
 const showPopupPassword = ref(false)
-const newusername = ref(userStore.userInfo.username)
+const newusername = ref(userStore.userInfo.nickName)
 const newpassword = ref('')
 const oldpassword = ref('')
 
@@ -39,24 +40,38 @@ const goBack = () => {
   router.back()
 }
 
-const handleUpdate = () => {
+const handleUpdate = async () => {
   if (!newusername.value) {
     showToast('请输入用户名')
     return
   }
-  const userInfo = {
-    username: newusername.value,
-    phone: userStore.userInfo.phone,
-    password: userStore.userInfo.password,
-    LastLogin: userStore.userInfo.LastLogin,
+  if (newusername.value === userStore.userInfo.nickName) {
+    showToast('用户名未改变')
+    showPopup.value = false
+    return
   }
-  updateUserInfo(userInfo)
-  showPopup.value = false
-  showToast('更新成功')
+  try {
+    const res = await request.post('/api/travel/update_nickname',{},{
+      params:{
+        userId: getUserId(),
+        nickName: newusername.value,
+      }
+    })
+    if (res.code === 200) {
+      showToast('更新成功')
+     updateNickname(newusername.value)
+    } else {
+      showToast(res.message)
+    } 
+  } catch (error) {
+    showToast(error.message)
+  } finally {
+    showPopup.value = false
+  }
 }
 
 // 提交密码
-const handleUpdatePassword = () => {
+const handleUpdatePassword = async () => {
   if (!oldpassword.value) {
     showToast('请输入旧密码')
     return
@@ -65,20 +80,25 @@ const handleUpdatePassword = () => {
     showToast('请输入新密码')
     return
   }
-  // 先验证旧密码是否正确
-  if (oldpassword.value !== userStore.userInfo.password) {
-    showToast('旧密码错误')
-    return
+  try {
+    const res = await request.post('/api/travel/update_pwd',{},{
+      params:{
+        userId: getUserId(),
+        oldPassword: oldpassword.value,
+        newPassword: newpassword.value,
+      }
+    })
+    if (res.code === 200) {
+      showToast('更新成功')
+      showPopupPassword.value = false
+    } else {
+      showToast(res.message)
+    } 
+  } catch (error) {
+    showToast(error.message)
+  } finally {
+    showPopupPassword.value = false
   }
-  const userInfo = {
-    username: userStore.userInfo.username,
-    phone: userStore.userInfo.phone,
-    password: newpassword.value,
-    LastLogin: userStore.userInfo.LastLogin,
-  }
-  updateUserInfo(userInfo)
-  showPopupPassword.value = false
-  showToast('更新成功')
 }
   
 </script>

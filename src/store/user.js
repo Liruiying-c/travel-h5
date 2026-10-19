@@ -2,7 +2,6 @@ import { reactive, computed } from 'vue'
 import router from '../router'
 import { showToast } from 'vant'
 
-
 const STORAGE_KEY = 'userInfo'
 
 // 从 localStorage 读取登录信息
@@ -77,6 +76,11 @@ export const updateUserInfo = (info) => {
 export const logout = () => {
   userStore.userInfo = null
   localStorage.removeItem(STORAGE_KEY)
+}
+
+export const updateNickname = (nickname) => {
+  userStore.userInfo.nickName = nickname
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(userStore.userInfo))
 }
 
 export default userStore
