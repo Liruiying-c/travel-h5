@@ -82,6 +82,7 @@ const route = useRoute()
 const activeDays = ref([])
 const loading = ref(false)
 const error = ref(false)
+const tripId = ref('')
 // 旅游推荐详情数据
 const tripData = ref({
     // "success": true,
@@ -178,7 +179,7 @@ const toggleFavorite = async () => {
   try {
     await request.post('/api/travel/collected', {}, {
       params: {
-        id: route.query.id,
+        id: tripId.value,
         collected: isFavorite.value ? 1 : 0,
       }
     })
@@ -194,17 +195,18 @@ const toggleFavorite = async () => {
 
 // 从历史记录/我的收藏进入：根据 id 查询真实收藏状态！
 const getHistoryDetail = async () => {
+  tripId.value = route.query.id
   loading.value = true
   error.value = false
   try {
     const res = await request.post('/api/travel/tripDetail',{}, {
-      params: {id: route.query.id}
+      params: {id: tripId.value}
     })
     const data = res.data || res || {}
     data.success = true
     tripData.value = data
     const collectRes = await request.post('/api/travel/checkCollect', {}, {
-      params: {id: route.query.id}
+      params: {id: tripId.value}
     })
     isFavorite.value = !!collectRes.data;
     activeDays.value = [tripData.value.dailyItinerary?.[0]?.day ?? 1]
@@ -230,6 +232,7 @@ const getRecommend = async () => {
     })
 
     tripData.value = res.data || {}
+    tripId.value = tripData.value.tripId
     // 默认展开第一天
     activeDays.value = [tripData.value.dailyItinerary?.[0]?.day ?? 1]
   } catch (err) {
